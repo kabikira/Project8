@@ -17,7 +17,11 @@ class ViewController: UIViewController {
     var activatedButtons = [UIButton]()
     var solutions = [String]()
 
-    var score = 0
+    var score = 0 {
+        didSet {
+            scoreLabel.text = "Score: \(score)"
+        }
+    }
     var level = 1
     
     //メインビューを白くて大きな空間として作成します。これは、UIViewの新しいインスタンスを作成して、それに白い背景色を与え、それをビューコントローラのviewプロパティに割り当てるだけです。
@@ -147,14 +151,54 @@ class ViewController: UIViewController {
             }
     
     @objc func letterTapped(_ sender: UIButton) {
-        
+        guard let buttonTitle = sender.titleLabel?.text else { return }
+        currentAnswer.text = currentAnswer.text?.appending(buttonTitle)
+        activatedButtons.append(sender)
+        sender.isHidden = true
     }
+    
     @objc func submitTapped(_ sender: UIButton) {
-        
+        guard let answerText = currentAnswer.text else { return }
+
+        if let solutionPosition = solutions.firstIndex(of: answerText) {
+            activatedButtons.removeAll()
+
+            var splitAnswers = answersLabel.text?.components(separatedBy: "\n")
+            splitAnswers?[solutionPosition] = answerText
+            answersLabel.text = splitAnswers?.joined(separator: "\n")
+
+            currentAnswer.text = ""
+            score += 1
+
+            if score % 7 == 0 {
+                let ac = UIAlertController(title: "Well done!", message: "Are you ready for the next level?", preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "Let's go!", style: .default, handler: levelUp))
+                present(ac, animated: true)
+            }
+        }
     }
+    
+    func levelUp(action: UIAlertAction) {
+        level += 1
+        solutions.removeAll(keepingCapacity: true)
+
+        loadLevel()
+
+        for btn in letterButtons {
+            btn.isHidden = false
+        }
+    }
+    
     @objc func clearTapped(_ sender: UIButton) {
-        
+        currentAnswer.text = ""
+
+        for btn in activatedButtons {
+            btn.isHidden = false
+        }
+
+        activatedButtons.removeAll()
     }
+    
     func loadLevel() {
         var clueString = ""
         var solutionString = ""
@@ -188,12 +232,10 @@ class ViewController: UIViewController {
         answersLabel.text = solutionString.trimmingCharacters(in: .whitespacesAndNewlines)
 
         letterBits.shuffle()
-        print(letterBits.count, letterButtons.count)
 
         if letterBits.count == letterButtons.count {
-            print("a")
             for i in 0 ..< letterButtons.count {
-                print("b")
+                
                 letterButtons[i].setTitle(letterBits[i], for: .normal)
             }
         }
