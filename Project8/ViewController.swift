@@ -24,6 +24,9 @@ class ViewController: UIViewController {
     }
     var level = 1
     
+    // 正解した回数をカウント
+    var correctAnswersCount = 0
+    
     //メインビューを白くて大きな空間として作成します。これは、UIViewの新しいインスタンスを作成して、それに白い背景色を与え、それをビューコントローラのviewプロパティに割り当てるだけです。
     override func loadView() {
         view = UIView()
@@ -72,12 +75,19 @@ class ViewController: UIViewController {
         submit.setTitle("SUBMIT", for: .normal)
         submit.addTarget(self, action: #selector(submitTapped), for: .touchUpInside)
         view.addSubview(submit)
+        // Buttonをグレーの線で囲む
+        submit.layer.borderWidth = 1
+        submit.layer.borderColor = UIColor.lightGray.cgColor
+        
         
         let clear = UIButton(type: .system)
         clear.translatesAutoresizingMaskIntoConstraints = false
         clear.setTitle("CLEAR", for: .normal)
         clear.addTarget(self, action: #selector(clearTapped), for: .touchUpInside)
         view.addSubview(clear)
+        // Buttonをグレーの線で囲む
+        clear.layer.borderWidth = 1
+        clear.layer.borderColor = UIColor.lightGray.cgColor
         
         let buttonsView = UIView()
         buttonsView.translatesAutoresizingMaskIntoConstraints = false
@@ -137,6 +147,9 @@ class ViewController: UIViewController {
                 letterButton.addTarget(self, action: #selector(letterTapped), for: .touchUpInside)
                 buttonsView.addSubview(letterButton)
                 letterButtons.append(letterButton)
+                // Buttonをグレーの線で囲む
+                letterButton.layer.borderWidth = 1
+                letterButton.layer.borderColor = UIColor.lightGray.cgColor
             }
         }
 //        cluesLabel.backgroundColor = .red
@@ -155,6 +168,7 @@ class ViewController: UIViewController {
         currentAnswer.text = currentAnswer.text?.appending(buttonTitle)
         activatedButtons.append(sender)
         sender.isHidden = true
+        
     }
     
     @objc func submitTapped(_ sender: UIButton) {
@@ -169,12 +183,18 @@ class ViewController: UIViewController {
 
             currentAnswer.text = ""
             score += 1
+            correctAnswersCount += 1
 
-            if score % 7 == 0 {
+            if correctAnswersCount == 7 {
                 let ac = UIAlertController(title: "Well done!", message: "Are you ready for the next level?", preferredStyle: .alert)
                 ac.addAction(UIAlertAction(title: "Let's go!", style: .default, handler: levelUp))
                 present(ac, animated: true)
             }
+        } else {
+            let ac = UIAlertController(title: "Wrong!", message: nil, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Done", style: .default))
+            present(ac, animated: true)
+            score -= 1
         }
     }
     
